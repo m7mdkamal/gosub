@@ -20,6 +20,12 @@ type Client interface {
 type OpenSubtitle struct {
 }
 
+// LanguagesIDs stores languages ids for opensubtitle client
+var LanguagesIDs = map[string]string{
+	"english": "en",
+	"arabic":  "ara",
+}
+
 // Search for subtitle files
 func (opensub *OpenSubtitle) Search(sp OpenSubtitleSearchParameters) ([]Subtitle, error) {
 	// send request
@@ -27,12 +33,12 @@ func (opensub *OpenSubtitle) Search(sp OpenSubtitleSearchParameters) ([]Subtitle
 	defer resp.Body.Close()
 	panicOnError(err)
 
-	// check the response
-	// todo:: check response header status
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Got %s %d instead of 200", resp.Status, resp.StatusCode)
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	panicOnError(err)
 
-	// if 200 convert to struct
 	openSubResp := OpenSubtitleResponse{}
 	err = json.Unmarshal(body, &openSubResp)
 	panicOnError(err)
@@ -74,19 +80,9 @@ func (opensub *OpenSubtitle) Download(filepath, url string) error {
 	return nil
 }
 
-// LanguagesIDs stores languages ids for opensubtitle client
-var LanguagesIDs = map[string]string{
-	"english": "en",
-	"arabic":  "ara",
-}
-
 func generateSearchURL(sp OpenSubtitleSearchParameters) string {
 	url := "https://rest.opensubtitles.org/search"
 
-	// MovieSize / Hash
-	// Episode / season / imdbid
-	// query -> just a text
-	// sublangid
 	url = fmt.Sprintf("%s/%s-%d", url, "moviebytesize", sp.moviebytesize)
 	url = fmt.Sprintf("%s/%s-%s", url, "moviehash", sp.moviehash)
 	url = fmt.Sprintf("%s/%s-%s", url, "sublanguageid", LanguagesIDs[sp.sublanguage])

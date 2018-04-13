@@ -16,7 +16,7 @@ var (
 )
 
 // Run start point for the app
-func Run(path, language string) {
+func Run(path, language, query string) {
 
 	dir, err := os.Open(path)
 	defer dir.Close()
