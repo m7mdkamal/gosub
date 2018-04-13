@@ -10,7 +10,12 @@ import (
 	"strings"
 )
 
-// Run boy run
+var (
+	// SupportedExtention to search for
+	SupportedExtention = [...]string{".mkv", ".mp4", ".avi"}
+)
+
+// Run start point for the app
 func Run(path, language string) {
 
 	dir, err := os.Open(path)
@@ -27,7 +32,7 @@ func Run(path, language string) {
 		files, err := ioutil.ReadDir(path)
 		panicOnError(err)
 		for _, file := range files {
-			if !file.IsDir() && strings.HasSuffix(file.Name(), ".mkv") {
+			if !file.IsDir() && checkExtention(file.Name()) {
 				moviesFiles = append(moviesFiles, file)
 			}
 		}
@@ -42,7 +47,6 @@ func Run(path, language string) {
 
 		fmt.Println("Searching for:", fileInfo.Name())
 
-		// fmt.Println(dir + "/" + fileO.Name())
 		file, err := os.Open(fileInfo.Name())
 		defer file.Close()
 		panicOnError(err)
@@ -57,19 +61,28 @@ func Run(path, language string) {
 
 		fmt.Printf("Found %d subtitle/s.\n", len(subtitles))
 
-		// for _, sub := range subtitles {
-		// fmt.Println(sub.DownloadLink)
-		// client.Download(filePath+".srt", sub.DownloadLink)
-		// }
+		for _, sub := range subtitles {
+			subPath := fmt.Sprintf("%s.%s.%s", fileInfo.Name(), language, sub.SubFormat)
+			client.Download(subPath, sub.DownloadLink)
+		}
 	}
 
+}
+
+func checkExtention(filename string) bool {
+	for _, ext := range SupportedExtention {
+		if strings.HasSuffix(filename, ext) {
+			return true
+		}
+	}
+	return false
 }
 
 const (
 	ChunkSize = 65536 // 64k
 )
 
-// Generate an OSDB hash for an *os.File.
+// HashFile Generate an OSDB hash for an *os.File.
 func HashFile(file *os.File) (hash uint64, err error) {
 	fi, err := file.Stat()
 	if err != nil {
