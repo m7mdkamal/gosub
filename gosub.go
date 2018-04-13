@@ -56,7 +56,7 @@ func Run(path, language string) {
 		subtitles, _ := client.Search(OpenSubtitleSearchParameters{
 			moviebytesize: fileInfo.Size(),
 			moviehash:     fmt.Sprintf("%x", hash),
-			sublanguageid: language,
+			sublanguage:   language,
 		})
 
 		fmt.Printf("Found %d subtitle/s.\n", len(subtitles))

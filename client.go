@@ -74,6 +74,12 @@ func (opensub *OpenSubtitle) Download(filepath, url string) error {
 	return nil
 }
 
+// LanguagesIDs stores languages ids for opensubtitle client
+var LanguagesIDs = map[string]string{
+	"english": "en",
+	"arabic":  "ara",
+}
+
 func generateSearchURL(sp OpenSubtitleSearchParameters) string {
 	url := "https://rest.opensubtitles.org/search"
 
@@ -83,7 +89,7 @@ func generateSearchURL(sp OpenSubtitleSearchParameters) string {
 	// sublangid
 	url = fmt.Sprintf("%s/%s-%d", url, "moviebytesize", sp.moviebytesize)
 	url = fmt.Sprintf("%s/%s-%s", url, "moviehash", sp.moviehash)
-	url = fmt.Sprintf("%s/%s-%s", url, "sublanguageid", sp.sublanguageid)
+	url = fmt.Sprintf("%s/%s-%s", url, "sublanguageid", LanguagesIDs[sp.sublanguage])
 	log.Println(url)
 	return url
 }
@@ -106,7 +112,7 @@ type OpenSubtitleSearchParameters struct {
 	moviehash     string //(should be always 16 character, must be together with moviebytesize)
 	query         string //(use url_encode, make sure " " is converted to "%20")
 	season        int
-	sublanguageid string //(if ommited, all languages are returned)
+	sublanguage   string //(if ommited, all languages are returned)
 	tag           string //(use url_encode, make sure " " is converted to "%20")
 }
 
