@@ -43,6 +43,7 @@ func (opensub *OpenSubtitle) Search(sp OpenSubtitleSearchParameters) ([]Subtitle
 		subtitles = append(subtitles, Subtitle{
 			DownloadLink: opensubtitle.SubDownloadLink,
 			Language:     opensubtitle.LanguageName,
+			SubFormat:    opensubtitle.SubFormat,
 		})
 	}
 	return subtitles, nil
@@ -83,7 +84,7 @@ func generateSearchURL(sp OpenSubtitleSearchParameters) string {
 	url = fmt.Sprintf("%s/%s-%d", url, "moviebytesize", sp.moviebytesize)
 	url = fmt.Sprintf("%s/%s-%s", url, "moviehash", sp.moviehash)
 	url = fmt.Sprintf("%s/%s-%s", url, "sublanguageid", sp.sublanguageid)
-
+	log.Println(url)
 	return url
 }
 

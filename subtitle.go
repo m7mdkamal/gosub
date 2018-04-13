@@ -4,4 +4,5 @@ package gosub
 type Subtitle struct {
 	Language     string
 	DownloadLink string
+	SubFormat    string
 }
