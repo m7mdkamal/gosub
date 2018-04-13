@@ -1,0 +1,2 @@
+# gosub
+CLI subtitle downloader
