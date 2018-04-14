@@ -5,4 +5,4 @@ CLI subtitle downloader
 
 `gosub -l arabic Silicon.Valley.S05E03.1080p.mkv`
 
-`gosub -l Rick.And.Morty.Season.3/`
+`gosub -l arabic Rick.And.Morty.Season.3/`
