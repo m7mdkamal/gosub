@@ -27,9 +27,12 @@ var rootCmd = &cobra.Command{
 			} else {
 				path = arg
 			}
+
 			lang, _ := cmd.Flags().GetString("language")
 			query, _ := cmd.Flags().GetString("query")
-			gosub.Run(path, lang, query)
+			season, _ := cmd.Flags().GetInt("season")
+			episode, _ := cmd.Flags().GetInt("episode")
+			gosub.Run(path, lang, query, season, episode)
 
 		}
 	},
@@ -38,6 +41,8 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.Flags().StringP("language", "l", "english", "Set subtitle language")
 	rootCmd.Flags().StringP("query", "q", "", "Set custom search query")
+	rootCmd.Flags().IntP("season", "s", 0, "Set season number")
+	rootCmd.Flags().IntP("episode", "e", 0, "Set episode number")
 }
 
 // Execute to start the cmd cobra

@@ -27,32 +27,49 @@ var LanguagesIDs = map[string]string{
 }
 
 // Search for subtitle files
-func (opensub *OpenSubtitle) Search(sp OpenSubtitleSearchParameters) ([]Subtitle, error) {
-	// send request
-	resp, err := get(generateSearchURL(sp))
-	defer resp.Body.Close()
-	panicOnError(err)
+func (opensub *OpenSubtitle) Search(sp OpenSubtitleSearchParameters) (subtitles []Subtitle, err error) {
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Got %s %d instead of 200", resp.Status, resp.StatusCode)
+	tries := 0
+
+	for tries < 2 {
+		// send request
+		var resp *http.Response
+		// defer resp.Body.Close()
+		if tries == 0 {
+			resp, err = get(generateSearchURLWithHash(sp))
+		} else if tries == 1 {
+			resp, err = get(generateSearchURLWithQuery(sp))
+		} else {
+			break
+		}
+		panicOnError(err)
+
+		if resp.StatusCode != 200 {
+			return nil, fmt.Errorf("Got %s %d instead of 200", resp.Status, resp.StatusCode)
+		}
+		body, err := ioutil.ReadAll(resp.Body)
+		panicOnError(err)
+
+		openSubResp := OpenSubtitleResponse{}
+		err = json.Unmarshal(body, &openSubResp)
+		panicOnError(err)
+
+		if len(openSubResp) == 0 {
+			tries++
+			continue
+		}
+
+		// get what you want from the response
+		for _, opensubtitle := range openSubResp {
+			subtitles = append(subtitles, Subtitle{
+				DownloadLink: opensubtitle.SubDownloadLink,
+				Language:     opensubtitle.LanguageName,
+				SubFormat:    opensubtitle.SubFormat,
+			})
+		}
+		return subtitles, nil
 	}
-	body, err := ioutil.ReadAll(resp.Body)
-	panicOnError(err)
-
-	openSubResp := OpenSubtitleResponse{}
-	err = json.Unmarshal(body, &openSubResp)
-	panicOnError(err)
-
-	// get what you want from the response
-	subtitles := []Subtitle{}
-	for _, opensubtitle := range openSubResp {
-		subtitles = append(subtitles, Subtitle{
-			DownloadLink: opensubtitle.SubDownloadLink,
-			Language:     opensubtitle.LanguageName,
-			SubFormat:    opensubtitle.SubFormat,
-		})
-	}
-	return subtitles, nil
+	return nil, fmt.Errorf("No subtitle found")
 }
 
 // Download subtitle
@@ -80,11 +97,30 @@ func (opensub *OpenSubtitle) Download(filepath, url string) error {
 	return nil
 }
 
-func generateSearchURL(sp OpenSubtitleSearchParameters) string {
+func generateSearchURLWithHash(sp OpenSubtitleSearchParameters) string {
 	url := "https://rest.opensubtitles.org/search"
 
 	url = fmt.Sprintf("%s/%s-%d", url, "moviebytesize", sp.moviebytesize)
 	url = fmt.Sprintf("%s/%s-%s", url, "moviehash", sp.moviehash)
+	url = fmt.Sprintf("%s/%s-%s", url, "sublanguageid", LanguagesIDs[sp.sublanguage])
+	log.Println(url)
+	return url
+}
+
+func generateSearchURLWithQuery(sp OpenSubtitleSearchParameters) string {
+	url := "https://rest.opensubtitles.org/search"
+
+	// todo get the info from file name
+	if sp.query != "" {
+		url = fmt.Sprintf("%s/%s-%s", url, "query", sp.query)
+	}
+	if sp.season != 0 {
+		url = fmt.Sprintf("%s/%s-%d", url, "season", sp.season)
+	}
+	if sp.episode != 0 {
+		url = fmt.Sprintf("%s/%s-%d", url, "episode", sp.episode)
+	}
+
 	url = fmt.Sprintf("%s/%s-%s", url, "sublanguageid", LanguagesIDs[sp.sublanguage])
 	log.Println(url)
 	return url
@@ -138,9 +174,9 @@ type OpenSubtitleResponse []struct {
 	QueryCached      int         `json:"QueryCached"`
 	QueryNumber      string      `json:"QueryNumber"`
 	QueryParameters  struct {
-		Episode       int    `json:"episode"`
+		Episode       string `json:"episode"`
 		Imdbid        string `json:"imdbid"`
-		Season        int    `json:"season"`
+		Season        string `json:"season"`
 		Sublanguageid string `json:"sublanguageid"`
 	} `json:"QueryParameters"`
 	Score               float64 `json:"Score"`

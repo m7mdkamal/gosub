@@ -16,7 +16,7 @@ var (
 )
 
 // Run start point for the app
-func Run(path, language, query string) {
+func Run(path, language, query string, season, episode int) {
 
 	dir, err := os.Open(path)
 	defer dir.Close()
@@ -57,6 +57,9 @@ func Run(path, language, query string) {
 			moviebytesize: fileInfo.Size(),
 			moviehash:     fmt.Sprintf("%x", hash),
 			sublanguage:   language,
+			query:         query,
+			season:        season,
+			episode:       episode,
 		})
 
 		fmt.Printf("Found %d subtitle/s.\n", len(subtitles))
