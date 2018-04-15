@@ -68,6 +68,7 @@ func Run(path, language, query string, season, episode int) {
 		for _, sub := range subtitles {
 			subPath := fmt.Sprintf("%s.%s.%s", fileInfo.Name(), language, sub.SubFormat)
 			client.Download(subPath, sub.DownloadLink)
+			break
 		}
 	}
 
