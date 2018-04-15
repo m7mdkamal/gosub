@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 )
 
 // Client interface for client functionality
@@ -110,7 +111,23 @@ func generateSearchURLWithHash(sp OpenSubtitleSearchParameters) string {
 func generateSearchURLWithQuery(sp OpenSubtitleSearchParameters) string {
 	url := "https://rest.opensubtitles.org/search"
 
-	// todo get the info from file name
+	if sp.query == "" {
+		sp.query = sp.filename
+	}
+
+	reg, _ := regexp.Compile("(s|S)([0-9]+)(e|E)([0-9]+)")
+
+	seasonEpisodeString := reg.FindString(sp.filename)
+	if seasonEpisodeString != "" {
+		var temp string
+		if sp.season == 0 {
+			fmt.Sscanf(seasonEpisodeString[1:], "%d%s", &sp.season, &temp)
+		}
+		if sp.episode == 0 {
+			fmt.Sscanf(temp[1:], "%d", &sp.episode)
+		}
+	}
+
 	if sp.query != "" {
 		url = fmt.Sprintf("%s/%s-%s", url, "query", sp.query)
 	}
@@ -138,6 +155,7 @@ func get(url string) (*http.Response, error) {
 
 // OpenSubtitleSearchParameters search parameter
 type OpenSubtitleSearchParameters struct {
+	filename      string
 	episode       int
 	imdbid        string //(always format it as sprintf("%07d", $imdb) - when using imdb you can add /tags-hdtv for example.
 	moviebytesize int64

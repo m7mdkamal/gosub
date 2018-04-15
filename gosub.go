@@ -60,6 +60,7 @@ func Run(path, language, query string, season, episode int) {
 			query:         query,
 			season:        season,
 			episode:       episode,
+			filename:      fileInfo.Name(),
 		})
 
 		fmt.Printf("Found %d subtitle/s.\n", len(subtitles))
