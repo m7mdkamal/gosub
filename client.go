@@ -63,6 +63,7 @@ func (opensub *OpenSubtitle) Search(sp OpenSubtitleSearchParameters) (subtitles 
 		// get what you want from the response
 		for _, opensubtitle := range openSubResp {
 			subtitles = append(subtitles, Subtitle{
+				Title:        opensubtitle.SubFileName,
 				DownloadLink: opensubtitle.SubDownloadLink,
 				Language:     opensubtitle.LanguageName,
 				SubFormat:    opensubtitle.SubFormat,

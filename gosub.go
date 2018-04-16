@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/manifoldco/promptui"
 )
 
 var (
@@ -64,14 +66,39 @@ func Run(path, language, query string, season, episode int) {
 		})
 
 		fmt.Printf("Found %d subtitle/s.\n", len(subtitles))
+		selectedIndex := 0
+		if len(subtitles) > 1 {
+			var subtitleNames []string
+			for _, sub := range subtitles {
+				subtitleNames = append(subtitleNames, sub.Title)
+			}
 
-		for _, sub := range subtitles {
-			subPath := fmt.Sprintf("%s.%s.%s", fileInfo.Name(), language, sub.SubFormat)
-			client.Download(subPath, sub.DownloadLink)
-			break
+			selectedIndex, err = showSelectPromopt(subtitleNames)
+			if err != nil {
+				continue
+			}
 		}
+
+		subPath := fmt.Sprintf("%s.%s.%s", fileInfo.Name(), language, subtitles[selectedIndex].SubFormat)
+		client.Download(subPath, subtitles[selectedIndex].DownloadLink)
+
 	}
 
+}
+
+func showSelectPromopt(items []string) (int, error) {
+	prompt := promptui.Select{
+		Label: "Choose one:",
+		Items: items[:],
+	}
+
+	resultIndex, _, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		return 0, err
+	}
+	return resultIndex, nil
 }
 
 func checkExtention(filename string) bool {
